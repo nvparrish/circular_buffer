@@ -117,11 +117,13 @@ impl<T> CircularBuffer<T> {
     ///
     /// For a non-full buffer, this is equivalent to a normal write.  If the buffer is full, this is
     /// equivalent to a read and a write.
+    ///
+    /// # Arguments
+    /// * `element` The element to be written to the buffer
     pub fn overwrite(&mut self, element: T) {
         if self.start == self.end && self.data[self.start].is_some() {
-            self.data[self.end] = Some(element);
-            self.start = (self.start + 1) % self.size;
-            self.end = self.start;
+            let _ = self.read();
+            let _ = self.write(element);
         } else {
             let _ = self.write(element); // Ignore the result; above check should suffice
         }
