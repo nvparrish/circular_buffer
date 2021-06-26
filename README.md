@@ -129,3 +129,18 @@ Wikipedia [http://en.wikipedia.org/wiki/Circular_buffer](http://en.wikipedia.org
 
 ## Submitting Incomplete Solutions
 It's possible to submit an incomplete solution so you can see how others have completed the exercise.
+
+## Running doc tests
+
+To create the documentation, use cargo doc.
+`cargo doc`
+
+There are doc tests in the documentation.  To use these, it is necessary to build the library and then to link the
+library when you run rustdoc test.  The first command will identify the necessary dependencies.  The lower block
+will create the crate, so it can be provided to rustdoc.
+
+`cargo test --doc --verbose`
+```
+rustc --crate-type lib --crate-name circular_buffer src/lib.rs
+rustdoc --test --crate-name circular_buffer src/lib.rs --extern=libcircular_buffer.rlib
+```

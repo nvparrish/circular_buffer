@@ -4,7 +4,6 @@
 //! Provides a circular buffer that is implemented as a heap-allocated generic of Optional objects.
 //! Using Optional allows setting the contents (to None::<T>) when they are unused.
 
-
 /// Implements a circular buffer generic
 ///
 /// This is implemented using a Boxed slice of options
@@ -38,12 +37,13 @@ impl<T> CircularBuffer<T> {
     /// # Example
     /// ```
     /// use circular_buffer::CircularBuffer;
-    /// buffer = CircularBuffer::<u32>::new(10); // Make a buffer with 10-number capacity
+    /// let buffer = CircularBuffer::<u32>::new(10); // Make a buffer with 10-number capacity
     /// ```
     pub fn new(capacity: usize) -> Self {
         let mut v: Vec<Option<T>> = Vec::with_capacity(capacity);
         v.resize_with(capacity, || None::<T>);
-        let buffer = CircularBuffer{data: v.into_boxed_slice(),
+        let buffer = CircularBuffer {
+            data: v.into_boxed_slice(),
             size: capacity,
             start: 0,
             end: 0,
@@ -62,13 +62,13 @@ impl<T> CircularBuffer<T> {
     ///
     /// # Examples
     /// ```
-    /// use circular_buffer::CircularBuffer;
-    /// let mut buffer = CircularBuffer::<u32>::new(1);
+    /// # use circular_buffer::CircularBuffer;
+    /// let mut buffer = CircularBuffer::<i32>::new(1);
     /// buffer.write(5);
-    /// assert_eq!(5, buffer.read());
+    /// assert_eq!(Result::Ok(5), buffer.read());
     /// ```
     /// ```
-    /// use circular_buffer::{CircularBuffer, Error};
+    /// # use circular_buffer::{CircularBuffer, Error};
     /// let mut buffer = CircularBuffer::<u32>::new(1);
     /// buffer.write(5);
     /// assert_eq!(Result::Err(Error::FullBuffer), buffer.write(6));
@@ -88,6 +88,19 @@ impl<T> CircularBuffer<T> {
     /// # Returns
     /// * `Ok(T)` The value is successfully read
     /// * `Err(Error::EmptyBuffer)` The buffer was empty
+    ///
+    /// # Examples
+    /// ```
+    /// # use circular_buffer::{CircularBuffer, Error};
+    /// let mut buffer = CircularBuffer::<u32>::new(1);
+    /// assert_eq!(Result::Err(Error::EmptyBuffer), buffer.read());
+    /// ```
+    /// ```
+    /// # use circular_buffer::{CircularBuffer, Error};
+    /// let mut buffer = CircularBuffer::<u32>::new(1);
+    /// buffer.write(5);
+    /// assert_eq!(Result::Ok(5), buffer.read());
+    /// ```
     pub fn read(&mut self) -> Result<T, Error> {
         if self.data[self.start].is_none() {
             Result::Err(Error::EmptyBuffer)
@@ -106,6 +119,21 @@ impl<T> CircularBuffer<T> {
     /// Clears the buffer
     ///
     /// All values are read from the buffer and discarded leaving an empty circular buffer.
+    ///
+    /// # Examples
+    /// ```
+    /// # use circular_buffer::{CircularBuffer, Error};
+    /// let mut buffer = CircularBuffer::<u32>::new(1);
+    /// buffer.clear();
+    /// assert_eq!(Result::Err(Error::EmptyBuffer), buffer.read());
+    /// ```
+    /// ```
+    /// # use circular_buffer::{CircularBuffer, Error};
+    /// let mut buffer = CircularBuffer::<u32>::new(1);
+    /// buffer.write(5);
+    /// buffer.clear();
+    /// assert_eq!(Result::Err(Error::EmptyBuffer), buffer.read());
+    /// ```
     pub fn clear(&mut self) {
         //unimplemented!("Clear the CircularBuffer.");
         while self.read().is_ok() {
@@ -120,6 +148,15 @@ impl<T> CircularBuffer<T> {
     ///
     /// # Arguments
     /// * `element` The element to be written to the buffer
+    ///
+    /// # Examples
+    /// ```
+    /// # use circular_buffer::{CircularBuffer, Error};
+    /// let mut buffer = CircularBuffer::<u32>::new(1);
+    /// buffer.write(5);
+    /// buffer.overwrite(6);
+    /// assert_eq!(Result::Ok(6), buffer.read());
+    /// ```
     pub fn overwrite(&mut self, element: T) {
         if self.start == self.end && self.data[self.start].is_some() {
             let _ = self.read();
